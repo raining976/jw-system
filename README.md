@@ -72,11 +72,11 @@
 
 ### 页面截图
 
-![image-20231013213801919](file:///Users/raining/projects/jw-system/README.assets/image-20231013213801919.png?lastModify=1697204351)
+![image-20231013213801919](README.assets/image-20231013213801919.png)
 
-![image-20231013213855327](file:///Users/raining/projects/jw-system/README.assets/image-20231013213855327.png?lastModify=1697204351)
+![image-20231013213855327](README.assets/image-20231013213855327.png)
 
-![image-20231013213913956](file:///Users/raining/projects/jw-system/README.assets/image-20231013213913956.png?lastModify=1697204351)
+![image-20231013213913956](README.assets/image-20231013213913956.png)
 
 ### 选课信息功能写的比较少
 
