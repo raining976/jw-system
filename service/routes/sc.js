@@ -2,12 +2,7 @@
 const express = require("express")
 const router = express.Router()
 const scDB = require("../db/scDB")
-const stuDB = require("../db/stuDB")
-const courseDB = require("../db/courseDB")
-
-
 router.get("/all", (req, res)=>{
-    const keyword = req.query.keyword
     // 空表示全部匹配
     scDB.queryAll((err,results)=>{
         if(err){
