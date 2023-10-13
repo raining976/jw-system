@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css"
+        integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls" crossorigin="anonymous">
+    <title>学生教务系统</title>
+    <style>
+        :root {
+            --theme--color: #408558;
+            --background--color: #4085581b;
+        }
+
+        .activeTable {
+            color: var(--theme--color) !important;
+        }
+
+        .form-check-input,
+        .headCheck {
+            margin-right: 10px;
+        }
+
+        .headCheck {
+            opacity: 0;
+        }
+
+        .operateBox {
+            margin-right: 20px;
+        }
+
+        .operateBox a {
+            margin: 0 5px;
+            color: var(--theme--color);
+        }
+
+        .addBox {
+            margin: 0 10px;
+            transform: scale(0.9);
+        }
+
+        .btn-primary {
+            background-color: var(--theme--color) !important;
+        }
+
+        .selected,
+        .selected td,
+        .selected th {
+            background-color: var(--background--color) !important;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--theme--color) !important;
+            cursor: pointer;
+        }
+
+        .form-check-input {
+            cursor: pointer;
+        }
+
+        .scInputBox {
+            margin: 1px 0;
+        }
+
+        .scInputBox button {
+            transform: scale(0.9);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <nav class="navbar navbar-expand-lg bg-body-tertiary">
+            <div class="container-fluid">
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item" v-for="(title , index) in tableTitles" :key="index">
+                            <a class="nav-link" :class="{activeTable: curTableIndex == index}" href="#" ref="stuLink"
+                                @click="changeTable(index)">{{ title }}</a>
+                        </li>
+
+                    </ul>
+                    <div class="addBox">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#stuModal"
+                            v-show="curTableIndex == 0" ref="openStuModalBtn">添加</button>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#courseModal" v-show="curTableIndex == 1"
+                            ref="openCourseModalBtn">添加</button>
+                    </div>
+                    <div class="operateBox" v-if="isShowOperate && curTableIndex != 2">
+                        <a href="#" @click="selected = true" v-show="!selected">选择</a>
+                        <a href="#" @click="selected = false;clearSelectedArr()" v-show="selected">取消选择</a>
+                        <a href="#" v-show="selectedArr.length == 1" @click="editForm()">修改</a>
+                        <a href="#" v-show="selectedArr.length != 0" @click="delItemsWarning()">删除</a>
+                    </div>
+                    <form class="d-flex" role="search">
+                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"
+                            v-model="inputValues">
+                        <button class="btn btn-outline-success" type="submit"
+                            @click="search(curTableIndex)">Search</button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+        <!-- 学生信息表格 -->
+        <div class="tableBox">
+            <table class="table table-striped" v-if="curTableIndex == 0">
+                <thead>
+                    <tr>
+                        <th scope="col"><input class="headCheck" type="checkbox" v-show="selected">#</th>
+                        <th scope="col">学号</th>
+                        <th scope="col">姓名</th>
+                        <th scope="col">性别</th>
+                        <th scope="col">专业</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(stu, index) in students" :key="index" :class="{selected: selectedArr.includes(stu.id)}">
+                        <th scope="row"><input class="form-check-input" type="checkbox" v-if="selected"
+                                @change="checkBoxChanged(stu.id)">{{index+1}}</th>
+                        <td>{{stu.id}}</td>
+                        <td>{{stu.name}}</td>
+                        <td>{{stu.sex == 1 ? "男" : "女"}}</td>
+                        <td>{{stu.speciality}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <!-- /学生信息表格 -->
+            <!-- 课程信息表格 -->
+            <table class="table table-striped" v-if="curTableIndex == 1">
+                <thead>
+                    <tr>
+                        <th scope="col"><input class="headCheck" type="checkbox" v-show="selected">#</th>
+                        <th scope="col">课程号</th>
+                        <th scope="col">课程名称</th>
+                        <th scope="col">授课老师</th>
+                        <th scope="col">上课时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(cou, index) in courses" :key="index" :class="{selected: selectedArr.includes(cou.id)}">
+                        <th scope="row"><input class="form-check-input" type="checkbox" v-if="selected"
+                                @change="checkBoxChanged(cou.id)">{{index+1}}</th>
+                        <td>{{cou.id}}</td>
+                        <td>{{cou.name}}</td>
+                        <td>{{cou.teacher}}</td>
+                        <td>{{cou.time}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <!-- 课程信息表格 -->
+            <div class="row g-3 align-items-center scInputBox" v-if="curTableIndex == 2">
+                <div class="col-auto">
+                    <label class="col-form-label">学号</label>
+                </div>
+                <div class="col-auto">
+                    <input type="text" class="form-control" inputmode="numeric" pattern="[0-9]*"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '');" v-model="scForm.stu_id">
+                </div>
+                <div class="col-auto">
+                    <label class="col-form-label">课程号</label>
+                </div>
+                <div class="col-auto">
+                    <input type="text" class="form-control" inputmode="numeric" pattern="[0-9]*"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '');" v-model="scForm.cou_id">
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-primary" @click="submitScForm()">添加</button>
+                </div>
+                <div class="col-auto">
+                    <span class="form-text">
+                        根据前两个正确的表来填，不能填写不存在的学号和课程号
+                    </span>
+                </div>
+            </div>
+            <table class="table table-striped" v-if="curTableIndex == 2">
+                <thead>
+                    <tr>
+                        <th scope="col"><input class="headCheck" type="checkbox" v-show="selected">#</th>
+                        <th scope="col">课程号</th>
+                        <th scope="col">课程名称</th>
+                        <th scope="col">授课老师</th>
+                        <th scope="col">上课时间</th>
+                        <th scope="col">选课学生</th>
+                        <th scope="col">学生学号</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(sc, index) in scFormData" :key="index">
+                        <th scope="row">{{index+1}}</th>
+                        <td>{{sc.cou_id}}</td>
+                        <td>{{sc.cou_name}}</td>
+                        <td>{{sc.cou_teacher}}</td>
+                        <td>{{sc.cou_time}}</td>
+                        <td>{{sc.stu_name}}</td>
+                        <td>{{sc.stu_id}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="modalBox">
+            <div class="stuModalBox">
+                <div class="modal fade" id="stuModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                    aria-hidden="true" ref="stuModal">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="exampleModalLabel">学生信息</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form>
+                                    <div class="mb-3 row">
+                                        <label class="col-form-label col-sm-2">学号：</label>
+                                        <div class="col-sm-10">
+                                            <input class="form-control" type="text" inputmode="numeric" pattern="[0-9]*"
+                                                oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                                v-model="stuFormData.id" :disabled="isEditing">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 row">
+                                        <label class="col-form-label col-sm-2">姓名：</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" v-model="stuFormData.name">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 row">
+                                        <label class="col-form-label col-sm-2">性别：</label>
+                                        <div class="col-sm-10">
+                                            <input class="form-check-input" type="radio" name="sex"
+                                                v-model="stuFormData.sex" value="1">
+                                            <label class="form-check-label" style="margin-right: 20px;">男</label>
+                                            <input class="form-check-input" type="radio" name="sex"
+                                                v-model="stuFormData.sex" value="0">
+                                            <label class="form-check-label">女</label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 row">
+                                        <label class="col-form-label col-sm-2">专业：</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" v-model="stuFormData.speciality">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="reset" class="btn btn-secondary"
+                                            @click="clearStuForm()">重置</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                                            @click="clearStuForm()" ref="closeStuModalBtn">关闭</button>
+                                        <button type="button" class="btn btn-primary"
+                                            @click="submitStu(isEditing)">{{isEditing?"修改":"添加"}}</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="courseModalBox">
+                <div class="modal fade" id="courseModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                    aria-hidden="true" ref="modal">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="exampleModalLabel">课程信息</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form>
+                                    <div class="mb-3 row">
+                                        <label class="col-form-label col-sm-3">课程号：</label>
+                                        <div class="col-sm-9">
+                                            <input class="form-control" type="text" inputmode="numeric" pattern="[0-9]*"
+                                                oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                                v-model="courseFormData.id" :disabled="isEditing">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 row">
+                                        <label class="col-form-label col-sm-3">课程名称：</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" v-model="courseFormData.name">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 row">
+                                        <label class="col-form-label col-sm-3">授课教师：</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" v-model="courseFormData.teacher">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 row">
+                                        <label class="col-form-label col-sm-3">授课时间：</label>
+                                        <div class="col-sm-9">
+                                            <select class="form-select" aria-label="Default select example"
+                                                v-model="courseFormData.time">
+                                                <option selected value="">选择时间</option>
+                                                <option value="周一">周一</option>
+                                                <option value="周二">周二</option>
+                                                <option value="周三">周三</option>
+                                                <option value="周四">周四</option>
+                                                <option value="周五">周五</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="reset" class="btn btn-secondary"
+                                            @click="clearCourseForm()">重置</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                                            @click="clearCourseForm()" ref="closeCourseModalBtn">关闭</button>
+                                        <button type="button" class="btn btn-primary"
+                                            @click="submitCourse(isEditing)">{{isEditing?"修改":"添加"}}</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@0.21.1"></script>
+<script src="./api/http.js"></script>
+<script src="./api/index.js"></script>
+<script src="./app.js"></script>
+
+
+</html>
