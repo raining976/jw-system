@@ -1,9 +1,9 @@
 // app.js
-const express = require('express');
+const express = require('express'); // express 基于node
 const bodyParser = require('body-parser');
 const app = express();
-// 引入cors （允许跨域的中间件）
-const cors = require("cors")
+// 引入cors （允许跨域的中间件） 
+const cors = require("cors") // cors 是一个依赖
 // 使用cors中间件来允许跨域请求
 app.use(cors())
 
@@ -30,3 +30,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+// 127.0.0.1:3000/students

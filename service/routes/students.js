@@ -4,6 +4,7 @@ const router = express.Router();
 const stuDB = require("../db/stuDB")
 
 // 增加学生信息 id name sex speciality ✅
+// xxx/students/add post请求
 router.post('/add', (req, res) => {
     // 获取请求体中的学生信息
     const student = req.body;
